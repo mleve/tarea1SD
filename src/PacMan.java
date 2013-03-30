@@ -95,34 +95,20 @@ public class PacMan extends JFrame implements ActionListener{
 
 	public void GetImages(){
 
-		ghost = new ImageIcon(GameController.class.getResource("./ghost.gif"))
-				.getImage();
-		pacman1 = new ImageIcon(
-				GameController.class.getResource("./pacman.gif")).getImage();
-		pacman2up = new ImageIcon(GameController.class.getResource("./up1.gif"))
-				.getImage();
-		pacman3up = new ImageIcon(GameController.class.getResource("./up2.gif"))
-				.getImage();
-		pacman4up = new ImageIcon(GameController.class.getResource("./up3.gif"))
-				.getImage();
-		pacman2down = new ImageIcon(
-				GameController.class.getResource("./down1.gif")).getImage();
-		pacman3down = new ImageIcon(
-				GameController.class.getResource("./down2.gif")).getImage();
-		pacman4down = new ImageIcon(
-				GameController.class.getResource("./down3.gif")).getImage();
-		pacman2left = new ImageIcon(
-				GameController.class.getResource("./left1.gif")).getImage();
-		pacman3left = new ImageIcon(
-				GameController.class.getResource("./left2.gif")).getImage();
-		pacman4left = new ImageIcon(
-				GameController.class.getResource("./left3.gif")).getImage();
-		pacman2right = new ImageIcon(
-				GameController.class.getResource("./right1.gif")).getImage();
-		pacman3right = new ImageIcon(
-				GameController.class.getResource("./right2.gif")).getImage();
-		pacman4right = new ImageIcon(
-				GameController.class.getResource("./right3.gif")).getImage();
+		ghost = new ImageIcon(GameController.class.getResource("./ghost.gif")).getImage();
+		pacman1 = new ImageIcon(GameController.class.getResource("./pacman.gif")).getImage();
+		pacman2up = new ImageIcon(GameController.class.getResource("./up1.gif")).getImage();
+		pacman3up = new ImageIcon(GameController.class.getResource("./up2.gif")).getImage();
+		pacman4up = new ImageIcon(GameController.class.getResource("./up3.gif")).getImage();
+		pacman2down = new ImageIcon(GameController.class.getResource("./down1.gif")).getImage();
+		pacman3down = new ImageIcon(GameController.class.getResource("./down2.gif")).getImage();
+		pacman4down = new ImageIcon(GameController.class.getResource("./down3.gif")).getImage();
+		pacman2left = new ImageIcon(GameController.class.getResource("./left1.gif")).getImage();
+		pacman3left = new ImageIcon(GameController.class.getResource("./left2.gif")).getImage();
+		pacman4left = new ImageIcon(GameController.class.getResource("./left3.gif")).getImage();
+		pacman2right = new ImageIcon(GameController.class.getResource("./right1.gif")).getImage();
+		pacman3right = new ImageIcon(GameController.class.getResource("./right2.gif")).getImage();
+		pacman4right = new ImageIcon(GameController.class.getResource("./right3.gif")).getImage();
 
 	}
 
