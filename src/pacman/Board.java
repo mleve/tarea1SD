@@ -88,7 +88,9 @@ public class Board extends JPanel implements ActionListener{
 	Timer timer;
 	// Datos del servidor
 	ServerInterface server;
+	int pacmandir = 1; // Inicialmente mira hacia la derecha
 	int playerId = -1;
+	int[][] playersInfo;
 	public Board(){
 		// Conectarse al server
 		connect();
@@ -295,14 +297,22 @@ public class Board extends JPanel implements ActionListener{
 	}
 
 	public void DrawPacMan(Graphics2D g2d){
-		if(viewdx==-1)
+		if(viewdx==-1){
+			pacmandir = 3;
 			DrawPacManLeft(g2d);
-		else if(viewdx==1)
+		}
+		else if(viewdx==1){
+			pacmandir = 1;
 			DrawPacManRight(g2d);
-		else if(viewdy==-1)
+		}
+		else if(viewdy==-1){
+			pacmandir = 0;
 			DrawPacManUp(g2d);
-		else
+		}
+		else{
+			pacmandir = 2;
 			DrawPacManDown(g2d);
+		}
 	}
 
 	public void DrawPacManUp(Graphics2D g2d){
@@ -588,8 +598,9 @@ public class Board extends JPanel implements ActionListener{
 		
 		if(ingame){
 			try{
-				server.registerPosition(playerId, pacmanx, pacmany);
-				System.out.println("Registered position: ("+pacmanx+","+pacmany+")");
+				server.registerPosition(playerId, pacmanx, pacmany, pacmandir);
+				System.out.println("Registered position: ("+pacmanx+","+pacmany+","+pacmandir+")");
+				playersInfo = server.getInfo();
 			} catch(RemoteException exception){
 				exception.printStackTrace();
 				System.exit(128);
