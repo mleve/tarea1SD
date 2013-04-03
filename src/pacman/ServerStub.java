@@ -75,8 +75,11 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		ghosty = new int[maxghosts];
 		ghostdy = new int[maxghosts];
 		ghostspeed = new int[maxghosts];
+		dx = new int[4];
+		dy = new int[4];
 		levelInit();
 		timer = new Timer(40,this);
+		timer.start();
 	}
 	
 	/* Cada jugador debe registrarse en el servidor llamando a este metodo.
@@ -129,6 +132,16 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 */
 	public int[][] getInfo() throws RemoteException{
 		return playersInfo;
+	}
+	
+	/*Metodos de pruebas para ver si funciona el calcular las posiciones de los fantasmas remotamente
+	 *y mandarselas a los jugadores
+	 * */
+	public int[] getGhostsX() throws RemoteException{
+		return ghostx;
+	}
+	public int[] getGhostsY() throws RemoteException{
+		return ghosty;
 	}
 	
 	/*refreshGhosts() ocupa el arreglo screendata, en el juego original este 
@@ -212,8 +225,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(started)
+		if(started){
 			refreshGhosts();
-		
+		}
 	}
 }

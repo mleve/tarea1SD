@@ -196,12 +196,10 @@ public class Board extends JPanel implements ActionListener{
 	}
 
 	public void moveGhosts(Graphics2D g2d){
+		/*
 		short i;
 		int pos;
 		int count;
-		/*Aqui se debería pedir la posicion de los fantasmas al servidor,
-		 * luego ejecuta todo el jugo local que se ve aquí,
-		 * actualiza sus posiciones*/
 		
 		for(i = 0; i<nrofghosts; i++){
 			if(ghostx[i]%blocksize==0&&ghosty[i]%blocksize==0){
@@ -248,6 +246,18 @@ public class Board extends JPanel implements ActionListener{
 			}
 			ghostx[i] = ghostx[i]+(ghostdx[i]*ghostspeed[i]);
 			ghosty[i] = ghosty[i]+(ghostdy[i]*ghostspeed[i]);
+			*/
+			//Todos estos calculos de arriba los hace ahora el servidor
+		int i;
+		try{
+		ghostx = server.getGhostsX();
+		ghosty = server.getGhostsY();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.exit(128);
+		}
+		for(i = 0; i<nrofghosts; i++){
 			drawGhost(g2d, ghostx[i]+1, ghosty[i]+1);
 
 			if(pacmanx>(ghostx[i]-12)&&pacmanx<(ghostx[i]+12)&&pacmany>(ghosty[i]-12)&&pacmany<(ghosty[i]+12)&&ingame){
