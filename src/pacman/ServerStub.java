@@ -13,7 +13,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface{
 	 * 		La fila i pertenece al jugador con id i
 	 * 		La columna 0 indica su posicion en el eje x
 	 * 		La columna 1 indica su posicion en el eje y
-	 * 		La columna 2 indica su direccion
+	 * 		La columna 2 indica su direccion (util para dibujar el pacman)
 	 * 			0: up
 	 * 			1: right
 	 * 			2: down
@@ -42,9 +42,12 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface{
 	 * Retorna el id del nuevo jugador registrado.
 	 */
 	public int registerPlayer() throws RemoteException{
-		playersInfo[playerCount][3] = 0;
-		System.out.println("Player "+playerCount+" REGISTERED");
-		return playerCount++;
+		if(playerCount < maxPlayers){
+			playersInfo[playerCount][3] = 0;
+			System.out.println("Player "+playerCount+" REGISTERED");
+			return playerCount++;
+		} else
+			return -1;	// No quedan cupos
 	}
 	/* El jugador debe llamar esta funcion y debe pasar como argumento su id de
 	 * jugador para registrar su estado como ready.
@@ -71,8 +74,20 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface{
 		}
 		started = true;
 		playersInfo[playerId][3] = 2;
+		ripPlayersInfo();
 		return started;
 	}
+	/*
+	 * Truca la matriz playersInfo, eliminando las filas de los jugadores vacias
+	 */
+	private void ripPlayersInfo(){
+		int[][] rippedPlayersInfo= new int[playerCount][playersInfo[0].length];
+		for(int i = 0; i < rippedPlayersInfo.length; i++)
+			for(int j = 0; j < rippedPlayersInfo[0].length; j++)
+				rippedPlayersInfo[i][j] = playersInfo[i][j];
+		playersInfo = rippedPlayersInfo;
+	}
+	
 	/* El jugador llama a este metodo para actualizar su ubicacion en el servidor
 	 * El servidor no conoce el tablero, ni valida sus parametros, confia en que 
 	 * el jugador le pasa los datos correctos.

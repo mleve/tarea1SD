@@ -90,7 +90,7 @@ public class Board extends JPanel implements ActionListener{
 	ServerInterface server;
 	int pacmandir = 1; // Inicialmente mira hacia la derecha
 	int playerId = -1;
-	int[][] playersInfo;
+	int[][] playersInfo = null;
 	public Board(){
 		// Conectarse al server
 		connect();
@@ -299,86 +299,109 @@ public class Board extends JPanel implements ActionListener{
 	public void DrawPacMan(Graphics2D g2d){
 		if(viewdx==-1){
 			pacmandir = 3;
-			DrawPacManLeft(g2d);
+			DrawPacManLeft(g2d, pacmanx+1, pacmany+1);
 		}
 		else if(viewdx==1){
 			pacmandir = 1;
-			DrawPacManRight(g2d);
+			DrawPacManRight(g2d, pacmanx+1, pacmany+1);
 		}
 		else if(viewdy==-1){
 			pacmandir = 0;
-			DrawPacManUp(g2d);
+			DrawPacManUp(g2d, pacmanx+1, pacmany+1);
 		}
 		else{
 			pacmandir = 2;
-			DrawPacManDown(g2d);
+			DrawPacManDown(g2d, pacmanx+1, pacmany+1);
+		}
+		
+		if(playersInfo != null){
+			int dir;
+			for(int i = 0; i < playersInfo.length; i++){
+				if(i == playerId)
+					continue;				// No dibujar su propio pacman (se dibuja mas arriba)
+				dir = playersInfo[i][2];
+				switch(dir){
+					case 0: // up
+						DrawPacManUp(g2d, playersInfo[i][0], playersInfo[i][1]);
+						break;
+					case 1: // right
+						DrawPacManRight(g2d, playersInfo[i][0], playersInfo[i][1]);
+						break;
+					case 2: // down
+						DrawPacManDown(g2d, playersInfo[i][0], playersInfo[i][1]);
+						break;
+					case 3: // left
+						DrawPacManLeft(g2d, playersInfo[i][0], playersInfo[i][1]);
+						break;
+				}
+			}
 		}
 	}
 
-	public void DrawPacManUp(Graphics2D g2d){
+	public void DrawPacManUp(Graphics2D g2d, int x, int y){
 		switch(pacmananimpos){
 			case 1:
-				g2d.drawImage(pacman2up, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman2up, x, y, this);
 				break;
 			case 2:
-				g2d.drawImage(pacman3up, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman3up, x, y, this);
 				break;
 			case 3:
-				g2d.drawImage(pacman4up, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman4up, x, y, this);
 				break;
 			default:
-				g2d.drawImage(pacman1, pacmanx+1, pacmany+1, this);
-				break;
-		}
-	}
-
-	public void DrawPacManDown(Graphics2D g2d){
-		switch(pacmananimpos){
-			case 1:
-				g2d.drawImage(pacman2down, pacmanx+1, pacmany+1, this);
-				break;
-			case 2:
-				g2d.drawImage(pacman3down, pacmanx+1, pacmany+1, this);
-				break;
-			case 3:
-				g2d.drawImage(pacman4down, pacmanx+1, pacmany+1, this);
-				break;
-			default:
-				g2d.drawImage(pacman1, pacmanx+1, pacmany+1, this);
-				break;
-		}
-	}
-
-	public void DrawPacManLeft(Graphics2D g2d){
-		switch(pacmananimpos){
-			case 1:
-				g2d.drawImage(pacman2left, pacmanx+1, pacmany+1, this);
-				break;
-			case 2:
-				g2d.drawImage(pacman3left, pacmanx+1, pacmany+1, this);
-				break;
-			case 3:
-				g2d.drawImage(pacman4left, pacmanx+1, pacmany+1, this);
-				break;
-			default:
-				g2d.drawImage(pacman1, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman1, x, y, this);
 				break;
 		}
 	}
 
-	public void DrawPacManRight(Graphics2D g2d){
+	public void DrawPacManDown(Graphics2D g2d, int x, int y){
 		switch(pacmananimpos){
 			case 1:
-				g2d.drawImage(pacman2right, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman2down, x, y, this);
 				break;
 			case 2:
-				g2d.drawImage(pacman3right, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman3down, x, y, this);
 				break;
 			case 3:
-				g2d.drawImage(pacman4right, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman4down, x, y, this);
 				break;
 			default:
-				g2d.drawImage(pacman1, pacmanx+1, pacmany+1, this);
+				g2d.drawImage(pacman1, x, y, this);
+				break;
+		}
+	}
+
+	public void DrawPacManLeft(Graphics2D g2d, int x, int y){
+		switch(pacmananimpos){
+			case 1:
+				g2d.drawImage(pacman2left, x, y, this);
+				break;
+			case 2:
+				g2d.drawImage(pacman3left, x, y, this);
+				break;
+			case 3:
+				g2d.drawImage(pacman4left, x, y, this);
+				break;
+			default:
+				g2d.drawImage(pacman1, x, y, this);
+				break;
+		}
+	}
+
+	public void DrawPacManRight(Graphics2D g2d, int x, int y){
+		switch(pacmananimpos){
+			case 1:
+				g2d.drawImage(pacman2right, x, y, this);
+				break;
+			case 2:
+				g2d.drawImage(pacman3right, x, y, this);
+				break;
+			case 3:
+				g2d.drawImage(pacman4right, x, y, this);
+				break;
+			default:
+				g2d.drawImage(pacman1, x, y, this);
 				break;
 		}
 	}
