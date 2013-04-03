@@ -17,7 +17,12 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * 		La fila i pertenece al jugador con id i
 	 * 		La columna 0 indica su posicion en el eje x
 	 * 		La columna 1 indica su posicion en el eje y
-	 * 		La columna 2 indica su estado
+	 * 		La columna 2 indica su direccion (util para dibujar el pacman)
+	 * 			0: up
+	 * 			1: right
+	 * 			2: down
+	 * 			3: left
+	 * 		La columna 3 indica su estado
 	 * 			0: not ready
 	 * 			1: ready. Listo para empezar
 	 * 			2: playing
@@ -80,21 +85,27 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		levelInit();
 		timer = new Timer(40,this);
 		timer.start();
+
+		playersInfo = new int [maxPlayers][4];
+
 	}
 	
 	/* Cada jugador debe registrarse en el servidor llamando a este metodo.
 	 * Retorna el id del nuevo jugador registrado.
 	 */
 	public int registerPlayer() throws RemoteException{
-		playersInfo[playerCount][2] = 0;
-		System.out.println("Player "+playerCount+" REGISTERED");
-		return playerCount++;
+		if(playerCount < maxPlayers){
+			playersInfo[playerCount][3] = 0;
+			System.out.println("Player "+playerCount+" REGISTERED");
+			return playerCount++;
+		} else
+			return -1;	// No quedan cupos
 	}
 	/* El jugador debe llamar esta funcion y debe pasar como argumento su id de
 	 * jugador para registrar su estado como ready.
 	 */
 	public void registerReady(int playerId) throws RemoteException{
-		playersInfo[playerId][2] = 1;
+		playersInfo[playerId][3] = 1;
 		System.out.println("Player "+playerId+" is READY");
 	}
 	/* Se consulta este metodo para saber si todos los jugadores estan en estado
@@ -104,26 +115,39 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 */
 	public boolean started(int playerId) throws RemoteException{
 		if(started){
-			playersInfo[playerId][2] = 2;
+			playersInfo[playerId][3] = 2;
 			return started;
 		}
 		for(int i = 0; i < playerCount; i++){
-			if(playersInfo[i][2] != 1){
+			if(playersInfo[i][3] != 1){
 				System.out.println("Player "+i+" is NOT READY");
 				return false;
 			}
 		}
 		started = true;
-		playersInfo[playerId][2] = 2;
+		playersInfo[playerId][3] = 2;
+		ripPlayersInfo();
 		return started;
 	}
+	/*
+	 * Truca la matriz playersInfo, eliminando las filas de los jugadores vacias
+	 */
+	private void ripPlayersInfo(){
+		int[][] rippedPlayersInfo= new int[playerCount][playersInfo[0].length];
+		for(int i = 0; i < rippedPlayersInfo.length; i++)
+			for(int j = 0; j < rippedPlayersInfo[0].length; j++)
+				rippedPlayersInfo[i][j] = playersInfo[i][j];
+		playersInfo = rippedPlayersInfo;
+	}
+	
 	/* El jugador llama a este metodo para actualizar su ubicacion en el servidor
 	 * El servidor no conoce el tablero, ni valida sus parametros, confia en que 
 	 * el jugador le pasa los datos correctos.
 	 */
-	public void registerPosition(int playerId, int x, int y) throws RemoteException{
+	public void registerPosition(int playerId, int x, int y, int dir) throws RemoteException{
 		playersInfo[playerId][0] = x;
 		playersInfo[playerId][1] = y;
+		playersInfo[playerId][2] = dir;
 		System.out.println("Player "+playerId+" is in ("+x+","+y+")");
 	}
 
