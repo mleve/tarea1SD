@@ -1,5 +1,24 @@
 tarea1SD
 ========
+#MARIO
+
+Movi el calculo de las posiciones de los fantasmas al servidor, esto implico que ahora el servidor tiene un "ciclo" de refresco (implementado de
+la misma forma que para los clientes, con un timer de 40 miliseg y un ActionListener. Cada 40 miliseg se actualiza la posicion de los fantasmas.
+
+Ahora los clientes, en vez de hacer este calculo en moveGhost, piden las posiciones de los fantasmas (en 2 llamadas, para mantener la estructura
+del programa original)
+
+Ademas, me di cuenta que el arreglo screendata es el que guarda la información del tablero (y lo importante, donde quedan puntos para comer) de forma que, a modo de prueba, implemente que los clientes envien su screendata al servidor luego de mover su Pacman (metodo movePacMan() ), que es
+la unica parte donde este arreglo es modificado.
+
+Ademas, al momento de dibujar el tablero, los clientes "sincronizan" su screendata con la del servidor (en realidad, reemplazan uno por otro)
+
+COn estos cambios, ahora los clientes sincronizan las posiciones de fantasmas y del tablero, aunque esta ultima sufre
+bastante con los efectos del LAG.
+
+Convendria hacer que en vez de pasar todo el arreglo screendata por RMI, solo mandar los cambios (para el caso de enviar la info al servidor es 
+facil, en MovePacMan(), cuando se modifica screendata, habria que enviar ese cambio tambien al servidor), para el otro caso, creo que no hay muchas mas opciones que enviar todo el arreglo :S (quizas convenga que esta actualizacion no sea cada 40 mseg)
+
 #LUIS
 
 Implemente lo basico del servidor y algunas llamadas del cliente hacia el servidor.  
