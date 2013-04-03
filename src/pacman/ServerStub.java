@@ -171,9 +171,6 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		short i;
 		int pos;
 		int count;
-		/*Aqui se debería pedir la posicion de los fantasmas al servidor,
-		 * luego ejecuta todo el jugo local que se ve aquí,
-		 * actualiza sus posiciones*/
 		
 		for(i = 0; i<nrofghosts; i++){
 			if(ghostx[i]%blocksize==0&&ghosty[i]%blocksize==0){
@@ -228,5 +225,21 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		if(started){
 			refreshGhosts();
 		}
+	}
+
+	@Override
+	public void sendScreendata(short[] input) throws RemoteException {
+		// TODO Auto-generated method stub
+		//System.out.println("servidor recibio screendata");
+		screendata = null;
+		screendata = input;
+		
+	}
+
+	@Override
+	public short[] requestScreendata() throws RemoteException {
+		// TODO Auto-generated method stub
+		System.out.println("servidor envio screendata");
+		return screendata;
 	}
 }

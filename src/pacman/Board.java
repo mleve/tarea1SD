@@ -170,6 +170,7 @@ public class Board extends JPanel implements ActionListener{
 		short i = 0;
 		boolean finished = true;
 
+		
 		while(i<nrofblocks*nrofblocks&&finished){
 			if((screendata[i]&48)!=0)
 				finished = false;
@@ -249,6 +250,7 @@ public class Board extends JPanel implements ActionListener{
 			*/
 			//Todos estos calculos de arriba los hace ahora el servidor
 		int i;
+		//Pedimos la posicion actual de los fantasmas al servidor:
 		try{
 		ghostx = server.getGhostsX();
 		ghosty = server.getGhostsY();
@@ -305,6 +307,16 @@ public class Board extends JPanel implements ActionListener{
 		}
 		pacmanx = pacmanx+pacmanspeed*pacmandx;
 		pacmany = pacmany+pacmanspeed*pacmandy;
+		//Enviar screendata para actualizar el estado del tablero luego del 
+		//movimiento de un jugador:
+		try{
+			server.sendScreendata(screendata);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.exit(128);
+		}
+		
 	}
 
 	public void DrawPacMan(Graphics2D g2d){
@@ -393,7 +405,14 @@ public class Board extends JPanel implements ActionListener{
 	public void DrawMaze(Graphics2D g2d){
 		short i = 0;
 		int x, y;
-
+		//Actualizar screendata con la del server
+		screendata =null;
+		try{
+			screendata = server.requestScreendata();
+		}catch(Exception e){
+			e.printStackTrace();
+			System.exit(128);
+		}
 		for(y = 0; y<scrsize; y += blocksize){
 			for(x = 0; x<scrsize; x += blocksize){
 				g2d.setColor(mazecolor);
