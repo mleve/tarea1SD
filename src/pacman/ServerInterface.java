@@ -9,5 +9,9 @@ public interface ServerInterface extends Remote{
 	public boolean started(int playerId) throws RemoteException;
 	public void registerPosition(int playerId, int x, int y, int dir) throws RemoteException;
 	public int[][] getInfo() throws RemoteException;
+	public int[] getGhostsX() throws RemoteException;
+	public int[] getGhostsY() throws RemoteException;
+	public void sendScreendata(short[] input) throws RemoteException;
+	public short[] requestScreendata() throws RemoteException;
 
 }
