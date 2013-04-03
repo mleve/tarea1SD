@@ -199,7 +199,10 @@ public class Board extends JPanel implements ActionListener{
 		short i;
 		int pos;
 		int count;
-
+		/*Aqui se debería pedir la posicion de los fantasmas al servidor,
+		 * luego ejecuta todo el jugo local que se ve aquí,
+		 * actualiza sus posiciones*/
+		
 		for(i = 0; i<nrofghosts; i++){
 			if(ghostx[i]%blocksize==0&&ghosty[i]%blocksize==0){
 				pos = ghostx[i]/blocksize+nrofblocks*(int)(ghosty[i]/blocksize);
