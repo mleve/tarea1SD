@@ -10,7 +10,10 @@ public class Server{
 
 	public static void main(String[] args){
 		try{
-			stub = new ServerStub();
+			if(args.length != 0)
+				stub = new ServerStub(Integer.parseInt(args[0]));
+			else
+				stub = new ServerStub(2);
 
 			Naming.rebind("rmi://localhost:1099/ServerStub", stub);
 		} catch (RemoteException e){

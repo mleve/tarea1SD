@@ -67,9 +67,9 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	Timer timer;
 	
 	
-	public ServerStub() throws RemoteException{
+	public ServerStub(int maxPlayers) throws RemoteException{
 		super();
-		maxPlayers = 5;
+		this.maxPlayers = maxPlayers;
 		playerCount = 0;
 
 		playersInfo = new int [maxPlayers][4];
@@ -116,7 +116,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 			playersInfo[playerId][3] = 2;
 			return started;
 		}
-		for(int i = 0; i < playerCount; i++){
+		for(int i = 0; i < maxPlayers; i++){
 			if(playersInfo[i][3] != 1){
 				System.out.println("Player "+i+" is NOT READY");
 				return false;

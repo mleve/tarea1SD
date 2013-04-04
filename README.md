@@ -1,5 +1,11 @@
 tarea1SD
 ========
+#LUIS
+Para ejecutar el servidor: 
+	java pacman.Server x
+ 
+Donde x es el numero de jugadores obligado para comenzar la partida. Su valor por defecto es 2, si se omite.
+
 #MARIO
 
 Movi el calculo de las posiciones de los fantasmas al servidor, esto implico que ahora el servidor tiene un "ciclo" de refresco (implementado de
