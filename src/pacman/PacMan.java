@@ -6,8 +6,8 @@ import pacman.Board;
 
 public class PacMan extends JFrame{
 
-	public PacMan(){
-		add(new Board());
+	public PacMan(String server){
+		add(new Board(server));
 		setTitle("Pacman");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setSize(380, 420);
@@ -16,6 +16,11 @@ public class PacMan extends JFrame{
 	}
 
 	public static void main(String[] args){
-		new PacMan();
+		String dirServer="localhost";
+		if(args.length==1){
+			//usage: java.PacMan dirIp
+			dirServer=args[0];
+		}
+		new PacMan(dirServer);
 	}
 }
