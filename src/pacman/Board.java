@@ -91,9 +91,9 @@ public class Board extends JPanel implements ActionListener{
 	int pacmandir = 1; // Inicialmente mira hacia la derecha
 	int playerId = -1;
 	int[][] playersInfo = null;
-	public Board(){
+	public Board(String serverIp){
 		// Conectarse al server
-		connect();
+		connect(serverIp);
 		// Registrarse como player
 		try{
 			playerId = server.registerPlayer();
@@ -683,9 +683,9 @@ public class Board extends JPanel implements ActionListener{
 		repaint();
 	}
 	
-	private void connect(){
+	private void connect(String serverIp){
 		try{
-			server = (ServerInterface)Naming.lookup("rmi://localhost:1099/ServerStub");
+			server = (ServerInterface)Naming.lookup("rmi://"+serverIp+":1099/ServerStub");
 		} catch (NotBoundException e){
 			System.out.println("El servicio no esta publicado en el servidor");
 			System.exit(128);
