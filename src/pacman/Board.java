@@ -103,6 +103,10 @@ public class Board extends JPanel implements ActionListener{
 			e.printStackTrace();
 			System.exit(128);
 		}
+		if(playerId == -1){
+			// Si no se pudo tomar un cupo, se cierra
+			System.exit(1);
+		}
 		
 		GetImages();
 
@@ -185,7 +189,7 @@ public class Board extends JPanel implements ActionListener{
 
     	else if(i == 2) {
 
-    		s = "You have no lives left. Press s to play again.";
+    		s = "Game Over. Wait for the others";
             	g2d.setColor(new Color(0, 32, 48));
     	        g2d.fillRect(10, scrsize / 2 - 30, scrsize - 1, 50);
             	g2d.setColor(Color.white);
@@ -228,14 +232,17 @@ public class Board extends JPanel implements ActionListener{
 	}
 
 	public void Death(){
-
-	pacsleft--;
-	if(pacsleft==0){
-		ingame = false;
-		//ready = true;
-		dead = true;
-	}
-	LevelContinue();
+		System.out.println("DEAD");
+		pacsleft--;
+		if(pacsleft==0){
+			ingame = false;
+			//ready = true;
+			dead = true;
+			try{
+				server.registerDeath(playerId);
+			} catch(Exception e){}
+		}
+		LevelContinue();
 	}
 
 	public void moveGhosts(Graphics2D g2d){
@@ -404,20 +411,22 @@ public class Board extends JPanel implements ActionListener{
 			for(int i = 0; i < playersInfo.length; i++){
 				if(i == playerId)
 					continue;				// No dibujar su propio pacman (se dibuja mas arriba)
-				dir = playersInfo[i][2];
-				switch(dir){
-					case 0: // up
-						DrawPacManUp(g2d, playersInfo[i][0], playersInfo[i][1]);
-						break;
-					case 1: // right
-						DrawPacManRight(g2d, playersInfo[i][0], playersInfo[i][1]);
-						break;
-					case 2: // down
-						DrawPacManDown(g2d, playersInfo[i][0], playersInfo[i][1]);
-						break;
-					case 3: // left
-						DrawPacManLeft(g2d, playersInfo[i][0], playersInfo[i][1]);
-						break;
+				if(playersInfo[i][3] == 2){
+					dir = playersInfo[i][2];
+					switch(dir){
+						case 0: // up
+							DrawPacManUp(g2d, playersInfo[i][0], playersInfo[i][1]);
+							break;
+						case 1: // right
+							DrawPacManRight(g2d, playersInfo[i][0], playersInfo[i][1]);
+							break;
+						case 2: // down
+							DrawPacManDown(g2d, playersInfo[i][0], playersInfo[i][1]);
+							break;
+						case 3: // left
+							DrawPacManLeft(g2d, playersInfo[i][0], playersInfo[i][1]);
+							break;
+					}
 				}
 			}
 		}
@@ -626,10 +635,16 @@ public class Board extends JPanel implements ActionListener{
 		DoAnim();
 		if(ingame)
 			PlayGame(g2d);
-		 else{
-		    	if(winner) ShowIntroScreen(g2d, 1);
-		    	else if(dead) ShowIntroScreen(g2d, 2);
-		    	else ShowIntroScreen(g2d, 0);
+		else{
+			if(winner){
+				ShowIntroScreen(g2d, 1);
+			}
+			else if(dead){
+				ShowIntroScreen(g2d, 2);
+			}
+			else{
+				ShowIntroScreen(g2d, 0);
+			}
 		}
 
 		g.drawImage(ii, 5, 5, this);
@@ -657,6 +672,10 @@ public class Board extends JPanel implements ActionListener{
 					reqdy = 1;
 				} else if(key==KeyEvent.VK_ESCAPE&&timer.isRunning()){
 					ingame = false;
+					try{
+						server.registerQuit(playerId);
+					} catch(Exception exception){}
+					System.exit(0);
 				} else if(key==KeyEvent.VK_PAUSE){
 					if(timer.isRunning())
 						timer.stop();
@@ -665,18 +684,20 @@ public class Board extends JPanel implements ActionListener{
 				}
 			} else{
 				if(!ready && (key=='s'||key=='S')){
-					/* Al presionar 's' el jugador entra en estado READY, listo para comenzar la
-					 * partida. Registra su nuevo estado en el servidor y espera a que todos los
-					 * demas jugadores esten listos
-					 */
-					try{
-						server.registerReady(playerId);
-						System.out.println("RegisterReady");
-					} catch(RemoteException exception){
-						exception.printStackTrace();
-						System.exit(128);
+					if(!dead){
+						/* Al presionar 's' el jugador entra en estado READY, listo para comenzar la
+						 * partida. Registra su nuevo estado en el servidor y espera a que todos los
+						 * demas jugadores esten listos
+						 */
+						try{
+							server.registerReady(playerId);
+							System.out.println("RegisterReady");
+						} catch(RemoteException exception){
+							exception.printStackTrace();
+							System.exit(128);
+						}
+						ready = true;
 					}
-					ready = true;
 				}
 			}
 		}
@@ -692,7 +713,16 @@ public class Board extends JPanel implements ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent e){
-		if(!ingame && ready){
+		if(ingame){
+			try{
+				server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score);
+				//System.out.println("Registered position: ("+pacmanx+","+pacmany+","+pacmandir+")");
+				playersInfo = server.getInfo();
+			} catch(RemoteException exception){
+				exception.printStackTrace();
+				System.exit(128);
+			}
+		} else{
 			/* Si el cliente esta en estado READY, pero no ha comenzado todavia la partida,
 			 * cada 40ms el consulta al servidor si la partida comenzo, es decir,
 			 * si todos los jugadores registraron su estado como READY.
@@ -702,26 +732,18 @@ public class Board extends JPanel implements ActionListener{
 			boolean started = false;
 			try{
 				started = server.started(playerId);
-				System.out.println("Started: "+started);
 			} catch(RemoteException exception){
 				exception.printStackTrace();
 				System.exit(128);
 			}
-			if(started){
+			if(started && ready){
+				// Comienza el juego
 				ready = false;
 				ingame = true;
 				GameInit();
-			}
-		}
-		
-		if(ingame){
-			try{
-				server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score);
-				System.out.println("Registered position: ("+pacmanx+","+pacmany+","+pacmandir+")");
-				playersInfo = server.getInfo();
-			} catch(RemoteException exception){
-				exception.printStackTrace();
-				System.exit(128);
+			} else if(!started && dead){
+				// Todos murieron, se resetea el juego
+				dead = false;
 			}
 		}
 		repaint();
