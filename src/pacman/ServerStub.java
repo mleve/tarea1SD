@@ -23,6 +23,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * 			2: down
 	 * 			3: left
 	 * 		La columna 3 indica su estado
+	 * 		   -1: empty slot
 	 * 			0: not ready
 	 * 			1: ready. Listo para empezar
 	 * 			2: playing
@@ -73,6 +74,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		playerCount = 0;
 
 		playersInfo = new int [maxPlayers][5];
+		for(int i = 0; i < playersInfo.length; i++)
+			playersInfo[i][3] = -1;
 		
 		started = false;
 		screendata = new short[nrofblocks*nrofblocks];
@@ -93,11 +96,20 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 */
 	public int registerPlayer() throws RemoteException{
 		if(playerCount < maxPlayers){
-			playersInfo[playerCount][3] = 0;
-			System.out.println("Player "+playerCount+" REGISTERED");
-			return playerCount++;
-		} else
-			return -1;	// No quedan cupos
+			for(int i = 0; i < playersInfo.length; i++){
+				if(playersInfo[i][3] == -1){
+					playersInfo[i][0] = 0;
+					playersInfo[i][1] = 0;
+					playersInfo[i][2] = 0;
+					playersInfo[i][3] = 0;
+					playersInfo[i][4] = 0;
+					System.out.println("Player "+i+" REGISTERED");
+					playerCount++;
+					return i;
+				}
+			}
+		}
+		return -1;	// No quedan cupos
 	}
 	/* El jugador debe llamar esta funcion y debe pasar como argumento su id de
 	 * jugador para registrar su estado como ready.
@@ -106,6 +118,46 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		playersInfo[playerId][3] = 1;
 		System.out.println("Player "+playerId+" is READY");
 	}
+	/* El jugador debe llamar esta funcion y debe pasar como argumento su id de
+	 * jugador para registrar su muerte
+	 */
+	public void registerDeath(int playerId) throws RemoteException{
+		playersInfo[playerId][3] = 3;
+		System.out.println("Player "+playerId+" is DEAD");
+		for(int i = 0; i < playersInfo.length; i++){
+			if(playersInfo[i][3] == 2){
+				System.out.println("Waiting for player "+i+" to die");
+				return;
+			}
+		}
+		System.out.println("All players are DEAD");
+		for(int i = 0; i < playersInfo.length; i++){
+			if(playersInfo[i][3] == -1)
+				playersInfo[i][3] = 0;
+		}
+		started = false;
+		// Reset ghosts
+		currentspeed = 3;
+		screendata = new short[nrofblocks*nrofblocks];
+		ghostx = new int[maxghosts];
+		ghostdx = new int[maxghosts];
+		ghosty = new int[maxghosts];
+		ghostdy = new int[maxghosts];
+		ghostspeed = new int[maxghosts];
+		dx = new int[4];
+		dy = new int[4];
+		levelInit();
+		timer = new Timer(40,this);
+		timer.start();
+	}
+	
+	public void registerQuit(int playerId) throws RemoteException{
+		registerDeath(playerId);
+		playersInfo[playerId][3] = -1;
+		playerCount--;
+			
+	}
+	
 	/* Se consulta este metodo para saber si todos los jugadores estan en estado
 	 * ready, listo para comenzar. Si todos estan ready, retorna true, sino false.
 	 * Antes de retornar true, se cambia el estado del jugador que hizo la llamada
@@ -113,10 +165,12 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 */
 	public boolean started(int playerId) throws RemoteException{
 		if(started){
-			playersInfo[playerId][3] = 2;
+			if(playersInfo[playerId][3] == 1){
+				playersInfo[playerId][3] = 2;
+			}
 			return started;
 		}
-		for(int i = 0; i < maxPlayers; i++){
+		for(int i = 0; i < playersInfo.length; i++){
 			if(playersInfo[i][3] != 1){
 				System.out.println("Player "+i+" is NOT READY");
 				return false;
@@ -124,7 +178,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		}
 		started = true;
 		playersInfo[playerId][3] = 2;
-		ripPlayersInfo();
+		//ripPlayersInfo();
 		return started;
 	}
 	/*
@@ -147,7 +201,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		playersInfo[playerId][1] = y;
 		playersInfo[playerId][2] = dir;
 		playersInfo[playerId][4] = score;
-		System.out.println("Player "+playerId+" is in ("+x+","+y+")");
+		//System.out.println("Player "+playerId+" is in ("+x+","+y+")");
 	}
 
 	/* El jugador consulta este metodo para conocer el estado actual de los demas jugadores.
@@ -252,7 +306,6 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 
 	@Override
 	public void sendScreendata(short[] input) throws RemoteException {
-		// TODO Auto-generated method stub
 		//System.out.println("servidor recibio screendata");
 		screendata = null;
 		screendata = input;
@@ -261,8 +314,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 
 	@Override
 	public short[] requestScreendata() throws RemoteException {
-		// TODO Auto-generated method stub
-		System.out.println("servidor envio screendata");
+		//System.out.println("servidor envio screendata");
 		return screendata;
 	}
 }

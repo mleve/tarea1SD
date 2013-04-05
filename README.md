@@ -1,6 +1,11 @@
 tarea1SD
 ========
 #LUIS
+se puede abandonar el juego solo apretando esc. Asi se deja libre el cupo
+si no hay cupos en el servidor, el juego no abre (la ventana se cierra inmediatamente)
+si un jugador pierde debe esperar que el resto termine para poder jugar de nuevo
+
+#LUIS
 Para ejecutar el servidor: 
 	java pacman.Server x
  
