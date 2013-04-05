@@ -38,6 +38,8 @@ public class Board extends JPanel implements ActionListener{
 	boolean ready = false;
 	boolean ingame = false;
 	boolean dying = false;
+	boolean winner = false;
+    boolean dead = false;
 
 	final int blocksize = 24;
 	final int nrofblocks = 15;
@@ -152,21 +154,55 @@ public class Board extends JPanel implements ActionListener{
 		}
 	}
 
-	public void ShowIntroScreen(Graphics2D g2d){
+	public void ShowIntroScreen(Graphics2D g2d, int i) {
 
-		g2d.setColor(new Color(0, 32, 48));
-		g2d.fillRect(50, scrsize/2-30, scrsize-100, 50);
-		g2d.setColor(Color.white);
-		g2d.drawRect(50, scrsize/2-30, scrsize-100, 50);
+    	String s = "Press s to start.";
+    	Font small = new Font("Helvetica", Font.BOLD, 14);
+            FontMetrics metr = this.getFontMetrics(small);
 
-		String s = "Press s to start.";
-		Font small = new Font("Helvetica", Font.BOLD, 14);
-		FontMetrics metr = this.getFontMetrics(small);
+            g2d.setColor(Color.white);
+            g2d.setFont(small);
 
-		g2d.setColor(Color.white);
-		g2d.setFont(small);
-		g2d.drawString(s, (scrsize-metr.stringWidth(s))/2, scrsize/2);
-	}
+    	if(i == 1) {
+    		
+    		int j = playerId;
+    		int aux = playersInfo[playerId][4]; 
+    			for(int k = 0; k < playersInfo.length; k++){
+    				if(playersInfo[k][4] > aux){ 
+    					aux = playersInfo[k][4];
+    					j = k;
+    				}
+    			}
+    		
+    		s = "Player "+(j+1)+" has won. Press s to play again.";
+            	g2d.setColor(new Color(0, 32, 48));
+            	g2d.fillRect(10, scrsize / 2 - 30, scrsize - 1, 50);
+            	g2d.setColor(Color.white);
+            	g2d.drawRect(10, scrsize / 2 - 30, scrsize - 1, 50);
+    		g2d.drawString(s, (scrsize - metr.stringWidth(s)) / 2 + 10, scrsize / 2);
+
+    	}
+
+    	else if(i == 2) {
+
+    		s = "You have no lives left. Press s to play again.";
+            	g2d.setColor(new Color(0, 32, 48));
+    	        g2d.fillRect(10, scrsize / 2 - 30, scrsize - 1, 50);
+            	g2d.setColor(Color.white);
+            	g2d.drawRect(10, scrsize / 2 - 30, scrsize - 1, 50);
+    		g2d.drawString(s, (scrsize - metr.stringWidth(s)) / 2 + 10, scrsize / 2);
+
+    	}
+
+    	else {
+            	g2d.setColor(new Color(0, 32, 48));
+    	        g2d.fillRect(50, scrsize / 2 - 30, scrsize - 100, 50);
+            	g2d.setColor(Color.white);
+            	g2d.drawRect(50, scrsize / 2 - 30, scrsize - 100, 50);
+    		g2d.drawString(s, (scrsize - metr.stringWidth(s)) / 2, scrsize / 2);
+    	}
+       
+    }
 
 	public void CheckMaze(){
 		short i = 0;
@@ -179,7 +215,9 @@ public class Board extends JPanel implements ActionListener{
 		}
 
 		if(finished){
-			score += 50;
+			//score += 50;
+			ingame = false;
+			winner = true;
 
 			if(nrofghosts<maxghosts)
 				nrofghosts++;
@@ -191,10 +229,13 @@ public class Board extends JPanel implements ActionListener{
 
 	public void Death(){
 
-		pacsleft--;
-		if(pacsleft==0)
-			ingame = false;
-		LevelContinue();
+	pacsleft--;
+	if(pacsleft==0){
+		ingame = false;
+		//ready = true;
+		dead = true;
+	}
+	LevelContinue();
 	}
 
 	public void moveGhosts(Graphics2D g2d){
@@ -497,16 +538,16 @@ public class Board extends JPanel implements ActionListener{
 	}
 	
 	public void DrawScore(Graphics2D g){
-		int i;
-		String s;
+	int i;
+	String s;
 
-		g.setFont(smallfont);
-		g.setColor(new Color(96, 128, 255));
-		s = "Score: "+score;
-		g.drawString(s, scrsize/2+96, scrsize+16);
-		for(i = 0; i<pacsleft; i++){
-			g.drawImage(pacman3left, i*28+8, scrsize+1, this);
-		}
+	g.setFont(smallfont);
+	g.setColor(new Color(96, 128, 255));
+	s = "Player: "+ (playerId+1) + "                 Score: "+score;
+	g.drawString(s, scrsize/2-30, scrsize+16);
+	for(i = 0; i<pacsleft; i++){
+		g.drawImage(pacman3left, i*28+8, scrsize+1, this);
+	}
 	}
 
 	public void GameInit(){
@@ -585,8 +626,11 @@ public class Board extends JPanel implements ActionListener{
 		DoAnim();
 		if(ingame)
 			PlayGame(g2d);
-		else
-			ShowIntroScreen(g2d);
+		 else{
+		    	if(winner) ShowIntroScreen(g2d, 1);
+		    	else if(dead) ShowIntroScreen(g2d, 2);
+		    	else ShowIntroScreen(g2d, 0);
+		}
 
 		g.drawImage(ii, 5, 5, this);
 		Toolkit.getDefaultToolkit().sync();
@@ -672,7 +716,7 @@ public class Board extends JPanel implements ActionListener{
 		
 		if(ingame){
 			try{
-				server.registerPosition(playerId, pacmanx, pacmany, pacmandir);
+				server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score);
 				System.out.println("Registered position: ("+pacmanx+","+pacmany+","+pacmandir+")");
 				playersInfo = server.getInfo();
 			} catch(RemoteException exception){

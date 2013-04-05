@@ -27,7 +27,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * 			1: ready. Listo para empezar
 	 * 			2: playing
 	 * 			3: dead
-	 * 
+	 *		La columna 4 indica el puntaje
 	 * started indica si la partida comenzo
 	 */
 	
@@ -72,7 +72,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		this.maxPlayers = maxPlayers;
 		playerCount = 0;
 
-		playersInfo = new int [maxPlayers][4];
+		playersInfo = new int [maxPlayers][5];
 		
 		started = false;
 		screendata = new short[nrofblocks*nrofblocks];
@@ -142,10 +142,11 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * El servidor no conoce el tablero, ni valida sus parametros, confia en que 
 	 * el jugador le pasa los datos correctos.
 	 */
-	public void registerPosition(int playerId, int x, int y, int dir) throws RemoteException{
+	public void registerPosition(int playerId, int x, int y, int dir, int score) throws RemoteException{
 		playersInfo[playerId][0] = x;
 		playersInfo[playerId][1] = y;
 		playersInfo[playerId][2] = dir;
+		playersInfo[playerId][4] = score;
 		System.out.println("Player "+playerId+" is in ("+x+","+y+")");
 	}
 
