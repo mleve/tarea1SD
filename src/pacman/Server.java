@@ -10,7 +10,7 @@ public class Server{
 
 	public static void main(String[] args){
 		String dirServer="localhost";
-		if(args.length==2){
+		if(args.length>=2){
 			//Argumentos -Dalgodermi dirIp
 			dirServer=args[1];
 		}
