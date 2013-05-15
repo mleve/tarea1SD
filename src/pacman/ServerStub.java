@@ -1,6 +1,5 @@
 package pacman;
 
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.server.UnicastRemoteObject;
@@ -32,13 +31,15 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * started indica si la partida comenzo
 	 */
 	
+	//Datos que se deben transmitir si se quiere montar el server en otra parte:
 	int maxPlayers, playerCount;
 	int[][] playersInfo;
 	boolean started;
-	
-	//Variables necesarias para manejar los fantasmas:
-	int[] dx, dy;
+	short[] screendata;
 	int[] ghostx, ghosty, ghostdx, ghostdy, ghostspeed;
+	int[] dx, dy;
+	
+	//Datos estaticos necesarios para el juego:
 	int nrofghosts = 6;
 	final int maxghosts = 12;
 	final int blocksize = 24;
@@ -57,13 +58,10 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 								1, 17, 16, 16, 16, 16, 16, 18, 16, 16, 16, 16, 20,  0, 21,
 								1, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,  0, 21,
 								1, 25, 24, 24, 24, 24, 24, 24, 24, 24, 16, 16, 16, 18, 20,
-								9,  8,  8,  8,  8,  8,  8,  8,  8,  8, 25, 24, 24, 24, 28};
-	short[] screendata;
+								9,  8,  8,  8,  8,  8,  8,  8,  8,  8, 25, 24, 24, 24, 28};	
 	final int validspeeds[] = {1, 2, 3, 4, 6, 8};
 	final int maxspeed = 6;
 	int currentspeed = 3;
-	
-	
 	//Se colocara un timer para ir actualizando los valores de las posiciones de los fantasmas
 	Timer timer;
 	
@@ -316,5 +314,24 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	public short[] requestScreendata() throws RemoteException {
 		//System.out.println("servidor envio screendata");
 		return screendata;
+	}
+
+	@Override
+	public ServerBean getStatus() throws RemoteException{
+		//Devuelve un Bean con todos los datos del server:
+		ServerBean bean = new ServerBean();
+		bean.setDx(dx);
+		bean.setDy(dy);
+		bean.setGhostdx(ghostdx);
+		bean.setGhostdy(ghostdy);
+		bean.setGhostspeed(ghostspeed);
+		bean.setGhostx(ghostx);
+		bean.setGhosty(ghosty);
+		bean.setMaxPlayers(maxPlayers);
+		bean.setPlayerCount(playerCount);
+		bean.setPlayersInfo(playersInfo);
+		bean.setScreendata(screendata);
+		bean.setStarted(started);
+		return bean;
 	}
 }

@@ -15,5 +15,6 @@ public interface ServerInterface extends Remote{
 	public int[] getGhostsY() throws RemoteException;
 	public void sendScreendata(short[] input) throws RemoteException;
 	public short[] requestScreendata() throws RemoteException;
+	public ServerBean getStatus() throws RemoteException;
 
 }
