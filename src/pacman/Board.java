@@ -23,10 +23,16 @@ import java.rmi.Naming;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.NotBoundException;
+import java.util.Enumeration;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 
 public class Board extends JPanel implements ActionListener{
 
+	private ServerInterface newServer;
+	
 	Dimension d;
 	Font smallfont = new Font("Helvetica", Font.BOLD, 14);
 
@@ -308,6 +314,7 @@ public class Board extends JPanel implements ActionListener{
 			e.printStackTrace();
 			System.exit(128);
 		}
+		checkServerMigrated(ghostx);
 		for(i = 0; i<nrofghosts; i++){
 			drawGhost(g2d, ghostx[i]+1, ghosty[i]+1);
 
@@ -318,6 +325,38 @@ public class Board extends JPanel implements ActionListener{
 
 			}
 		}
+	}
+
+	private void checkServerMigrated(Object reqResult) {
+		/*Por convención, el servidor devolvera null a todas las peticiones de los clientes
+		 * si ocurrio migración (con excepcion a la peticion de nueva ip), si esto ocurre
+		 * los clientes piden la nueva ip para reconectarse al nuevo servidor
+		 */
+		if(reqResult==null){
+		String newIp=null;
+		try{
+			newIp=server.getNewServerIp();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		connect(newIp);
+		System.out.println("me conecte al nuevo server con exito :D");
+		/*Una solucion, pedir aqui la actualizacion de datos
+		 * al salir de este metodo, si reqResult era null, el programa se caera
+		 * */
+		try{
+			ghostx = server.getGhostsX();
+			ghosty = server.getGhostsY();
+			screendata = server.requestScreendata();
+			playersInfo = server.getInfo();
+		}catch(Exception e){
+			e.printStackTrace();
+			System.out.println("la peticion de datos al nuevo servidor fallo");
+		}
+		
+		}
+		
 	}
 
 	public void MovePacMan(){
@@ -515,6 +554,7 @@ public class Board extends JPanel implements ActionListener{
 			e.printStackTrace();
 			System.exit(128);
 		}
+		checkServerMigrated(screendata);
 		for(y = 0; y<scrsize; y += blocksize){
 			for(x = 0; x<scrsize; x += blocksize){
 				g2d.setColor(mazecolor);
@@ -722,6 +762,18 @@ public class Board extends JPanel implements ActionListener{
 				exception.printStackTrace();
 				System.exit(128);
 			}
+			checkServerMigrated(playersInfo);
+			if(playersInfo!=null){
+				if(playersInfo[playerId][5]==1){
+					//Le toca hacer de host
+					makeServer();
+					//Este cliente se reconecta al tiro a su nuevo servidor
+					
+				}
+					
+				
+			}
+				
 		} else{
 			/* Si el cliente esta en estado READY, pero no ha comenzado todavia la partida,
 			 * cada 40ms el consulta al servidor si la partida comenzo, es decir,
@@ -736,6 +788,7 @@ public class Board extends JPanel implements ActionListener{
 				exception.printStackTrace();
 				System.exit(128);
 			}
+			//checkServerMigrated(started);
 			if(started && ready){
 				// Comienza el juego
 				ready = false;
@@ -762,5 +815,62 @@ public class Board extends JPanel implements ActionListener{
 			System.out.println("Excepcion remota tratando de conectarse al servidor");
 			System.exit(128);
 		}
+	}
+	
+	
+	private void makeServer(){
+		//Instancia un nuevo servidor, con el estado del server antiguo, he informa cuando esta listo
+		ServerBean actualStatus = new ServerBean();
+		newServer = null;
+		String newHostIp = getLocalIp();
+		try{
+			actualStatus= server.getStatus();
+			newServer = new ServerStub(actualStatus);
+			Naming.rebind("rmi://"+newHostIp+":1099/ServerStub", newServer);
+		}catch(Exception e){
+			e.printStackTrace();
+			System.out.println("Algo paso al tratar de instanciar el nuevo server");
+		}
+		
+		//Informo al viejo server que ya se completo la migracion
+		if(newServer!=null){
+			try{
+				server.informNewServerIp(newHostIp);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			System.out.println("Cliente instancio nuevo servidor e informo su IP");
+			//reConecto este cliente inmediatamente
+			checkServerMigrated(null);
+		}
+		
+		
+		
+	}
+	
+	private String getLocalIp(){
+		/*Metodo trucho para determinar la Ip de este computador, fue el primero que encontre que me funciono bien xD
+		 * */
+		String ip=null;
+		try{
+			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+			while (interfaces.hasMoreElements()){
+			    NetworkInterface current = interfaces.nextElement();
+			    if (!current.isUp() || current.isLoopback() || current.isVirtual()) continue;
+			    Enumeration<InetAddress> addresses = current.getInetAddresses();
+			    while (addresses.hasMoreElements()){
+			        InetAddress current_addr = addresses.nextElement();
+			        if (current_addr.isLoopbackAddress()) continue;
+			        if (current_addr instanceof Inet4Address) 
+			        	ip = current_addr.getHostAddress();
+			    }
+			}
+		}
+		catch(Exception e){
+			System.out.println("Error tratando de determinar la ip");
+			ip=null;
+		}
+		return ip;
+		
 	}
 }

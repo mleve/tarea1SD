@@ -1,0 +1,48 @@
+Los pasos que se siguen al hacer una migración:
+
+Estado inicial del servidor:
+int HostPlayerId=0 (cuando se inicia de 0 el juego, siempre el cliente 0 es el 
+Host)
+playersInfo[cualquiera][5] = 0 (este indicador se pone en 1 solo cuando a este 
+cliente le toca montar un server)
+
+El servidor actual, luego de 60 segundos, elige a 1 de los clientes y lo nombra
+servidor (pasa playersInfo[id][5] de 0 a 1) en su actionPerformed.Ademas, 
+el server modifica su variable inWorkingTime de true a false, 
+para evitar hacer este cambio mas de 1 vez.
+
+Los clientes evaluan si les toca hacer de Host en su actionPerformed (de Board.java)
+En este caso, llaman al metodo makeServer() de Board.java
+
+En este metodo, se le pide su estado al server a travez de getStatus() del server,
+este devuelve un ServerBean con toda la información necesaria. Luego se inicaliza
+un nuevo ServerStub(ServerBean) (Notar que este es un nuevo constructor para 
+ServerBean)
+
+Cuando se inicializa un ServerBean con este nuevo constructor, se obtiene el 
+estado del server anterior desde el bean y adicionalmente, se modifica
+playersInfo[cualquiera][5]=0 y hostPlayerId al id del host actual, lo otros 
+datos se copian directamente.
+
+Cuando retorna ServerStub(ServerBean) (todavia en makeServer() ) se realiza
+el rebind de este server en la ip del host actual. Si todo esto salio bien,
+entonces el nuevo host informa al server antiguo que el nuevo servidor esta
+listo y le envia la ip ( a traves del metodo informNewServerIp(String ip) de
+ServerStub) 
+
+Cuando el server antiguo recibe un informNewServerIp(string ip), entonces 
+cambia su estado isMigrated de false a true, y guarda la ip del nuevo server.
+
+Ahora, en cada petición que devuelva datos a los clientes se chequea si es que
+el server esta migrado, en cuyo caso solo se devuelve null (como acordamos).
+Los clientes (Board.java) verifican, cada vez que hacen una peticion que retorne
+datos, si es que lo devuelto es null (con el metodo checkServerMigrated(Object) )
+Si efectivamente es null, entonces los clientes piden la ip del nuevo servidor
+con getNewServerIp() y se reconectan a ese nuevo server (llamada al metodo connect
+con esta nueva ip) Adicionalmente, luego de la reconnecion, los clientes piden
+inmediatamente todos los datos al nuevo servidor (ya que si se cumplio que un
+objeto era null, al salir de checkServerMigrated el programa ocupara alguno de
+esos datos, y si sigue siendo null, se caera el programa)
+
+Esto completa la migración
+

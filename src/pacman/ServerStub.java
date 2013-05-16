@@ -28,8 +28,16 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * 			2: playing
 	 * 			3: dead
 	 *		La columna 4 indica el puntaje
+	 *		La columna 5 indica si este jugador debe actuar como server(1 si, 0 no)
 	 * started indica si la partida comenzo
 	 */
+	//Variables para la magia de la migracion
+	boolean isMigrated = false;
+	String newServerIp;
+	int hostPlayerId=0;
+	long initTime;
+	boolean inWorkingTime = true;
+	
 	
 	//Datos que se deben transmitir si se quiere montar el server en otra parte:
 	int maxPlayers, playerCount;
@@ -71,10 +79,11 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		this.maxPlayers = maxPlayers;
 		playerCount = 0;
 
-		playersInfo = new int [maxPlayers][5];
-		for(int i = 0; i < playersInfo.length; i++)
+		playersInfo = new int [maxPlayers][6];
+		for(int i = 0; i < playersInfo.length; i++){
 			playersInfo[i][3] = -1;
-		
+			playersInfo[i][5]=0;
+		}
 		started = false;
 		screendata = new short[nrofblocks*nrofblocks];
 		ghostx = new int[maxghosts];
@@ -87,6 +96,31 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		levelInit();
 		timer = new Timer(40,this);
 		timer.start();
+	}
+	
+	//Constructor para iniciar un server migrado
+	public ServerStub(ServerBean status)throws RemoteException{
+		maxPlayers = status.getMaxPlayers();
+		playerCount = status.getPlayerCount();
+		playersInfo = status.getPlayersInfo();
+		//Limpiar la peticion de cambio de migracion
+		for(hostPlayerId=0;hostPlayerId<playersInfo.length;hostPlayerId++){
+			if(playersInfo[hostPlayerId][5]==1)
+				break;
+		}
+		playersInfo[hostPlayerId][5]=0;
+		started = status.isStarted();
+		screendata = status.getScreendata();
+		ghostx = status.getGhostx();
+		ghosty = status.getGhosty();
+		ghostdx = status.getGhostdx();
+		ghostdy = status.getGhostdy();
+		ghostspeed = status.getGhostspeed();
+		dx = status.getDx();
+		dy = status.getDy();
+		timer = new Timer(40,this);
+		timer.start();
+		initTime=System.currentTimeMillis();
 	}
 	
 	/* Cada jugador debe registrarse en el servidor llamando a este metodo.
@@ -162,6 +196,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * de 1 (ready) a 2 (playing).
 	 */
 	public boolean started(int playerId) throws RemoteException{
+		if(isMigrated)
+			return (Boolean) null;
 		if(started){
 			if(playersInfo[playerId][3] == 1){
 				playersInfo[playerId][3] = 2;
@@ -170,13 +206,14 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		}
 		for(int i = 0; i < playersInfo.length; i++){
 			if(playersInfo[i][3] != 1){
-				System.out.println("Player "+i+" is NOT READY");
+				//System.out.println("Player "+i+" is NOT READY");
 				return false;
 			}
 		}
 		started = true;
 		playersInfo[playerId][3] = 2;
 		//ripPlayersInfo();
+		initTime = System.currentTimeMillis();
 		return started;
 	}
 	/*
@@ -206,6 +243,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * Retorna el array de enteros que utiliza el servidor para mantener los datos de los jugadores.
 	 */
 	public int[][] getInfo() throws RemoteException{
+		if(isMigrated)
+			return (int[][]) null;
 		return playersInfo;
 	}
 	
@@ -213,6 +252,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 *y mandarselas a los jugadores
 	 * */
 	public int[] getGhostsX() throws RemoteException{
+		if(isMigrated)
+			return (int[]) null;
 		return ghostx;
 	}
 	public int[] getGhostsY() throws RemoteException{
@@ -298,7 +339,21 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(started){
-			refreshGhosts();
+			refreshGhosts();	
+		//migracion cada 10 seg
+		if(inWorkingTime && (System.currentTimeMillis()-initTime)>=10*1000){
+			//Se debe realizar migracion, por ahora se pimponean entre jugador 1 y 2
+			if(hostPlayerId ==0){
+				playersInfo[1][5]=1;
+			}
+			else
+				playersInfo[0][5]=1;
+			
+			inWorkingTime=false;
+				
+			System.out.println("Se solicito migracion");	
+		}
+		
 		}
 	}
 
@@ -313,6 +368,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	@Override
 	public short[] requestScreendata() throws RemoteException {
 		//System.out.println("servidor envio screendata");
+		if(isMigrated)
+			return (short[]) null;
 		return screendata;
 	}
 
@@ -333,5 +390,21 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		bean.setScreendata(screendata);
 		bean.setStarted(started);
 		return bean;
+	}
+
+	@Override
+	public void informNewServerIp(String newIp) throws RemoteException {
+		/*El cliente que llama a este metodo informa que ha instanciado con exito un nuevo servidor
+		 * (con el estado del actual e informa la nueva Ip a la que conectarse
+		 * */
+		isMigrated = true;
+		newServerIp = newIp;
+		System.out.println("recibida la IP del nuevo servidor");
+	}
+
+	@Override
+	public String getNewServerIp() throws RemoteException {
+		//Cuando el cliente recibe un null a una peticion, pide la ip de un nuevo servidor para reconectarse
+		return newServerIp;
 	}
 }

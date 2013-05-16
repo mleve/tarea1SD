@@ -16,5 +16,7 @@ public interface ServerInterface extends Remote{
 	public void sendScreendata(short[] input) throws RemoteException;
 	public short[] requestScreendata() throws RemoteException;
 	public ServerBean getStatus() throws RemoteException;
+	public void informNewServerIp(String newIp) throws RemoteException;
+	public String getNewServerIp() throws RemoteException;
 
 }
