@@ -29,16 +29,21 @@ public class PacMan extends JFrame{
 
 	public static void main(String[] args){
 		if(args.length<1){
-			System.out.println("Error, debe especificar una ip del servidor");
+			System.out.println("Error, debe especificar ip servidor o localhost nPlayers para ser host");
 			System.exit(-1);
 		}
 		else{
 			String serverIp = args[0];
 			if(serverIp.equals("localhost")){
 				//Jugador es host de la partida
+				if(args.length<2){
+					System.out.println("Host debe indicar players: Pacman localhost n");
+					System.exit(-1);
+				}
+					
 				serverIp = getLocalIp();
 				try{
-					stub = new ServerStub(2);
+					stub = new ServerStub(Integer.parseInt(args[1]));
 					Naming.rebind("rmi://"+serverIp+":1099/ServerStub", stub);
 				}
 				catch (RemoteException e){

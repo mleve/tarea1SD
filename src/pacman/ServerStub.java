@@ -343,18 +343,28 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		//migracion cada 10 seg
 		if(inWorkingTime && (System.currentTimeMillis()-initTime)>=10*1000){
 			//Se debe realizar migracion, por ahora se pimponean entre jugador 1 y 2
-			if(hostPlayerId ==0){
-				playersInfo[1][5]=1;
-			}
-			else
-				playersInfo[0][5]=1;
-			
+			int newHost = newRandomHost(hostPlayerId);
+			playersInfo[hostPlayerId][5]=0;
+			playersInfo[newHost][5]=1;
 			inWorkingTime=false;
-				
 			System.out.println("Se solicito migracion");	
 		}
 		
 		}
+	}
+
+	private int newRandomHost(int actualHostId) {
+		// Retorna la id de un nuevo host que no sea el actual, y que sea un jugador valido
+		int newHostId=-1;
+		boolean validCandidate = false;
+		while(!validCandidate){
+			newHostId = (int) Math.floor(Math.random()*playersInfo.length);
+			if(newHostId==actualHostId || playersInfo[newHostId][3]==-1)
+				continue;
+			else
+				break;
+		}
+		return newHostId;
 	}
 
 	@Override
