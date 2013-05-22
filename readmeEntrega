@@ -1,9 +1,4 @@
-Archivo: /u/a/2011/mleveron/Documentos/tarea1SD-tarea2/Readme.txt Página 1 de 1 
 
-
-La aplicación solo se pudo probar en un solo equipo (se podria, para las proximas 
-tareas explicar como replicar el ambiente de pruebas para poder testear las 
-tareas)
 La migracion se hace pasando el estado del servidor a traves de un bean 
 Serializable (en el fondo, se pasan los datos relevantes del estado,se 
 instancia un nuevo servidor, y luego se hace un rebind al servicio RMI) 
