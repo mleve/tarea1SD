@@ -1,0 +1,43 @@
+Archivo: /u/a/2011/mleveron/Documentos/tarea1SD-tarea2/Readme.txt Página 1 de 1 
+
+
+La aplicación solo se pudo probar en un solo equipo (se podria, para las proximas 
+tareas explicar como replicar el ambiente de pruebas para poder testear las 
+tareas)
+La migracion se hace pasando el estado del servidor a traves de un bean 
+Serializable (en el fondo, se pasan los datos relevantes del estado,se 
+instancia un nuevo servidor, y luego se hace un rebind al servicio RMI) 
+
+
+Para compilar la aplicacion: 
+estando en la carpeta que contiene pacman, compilar:
+javac pacman/*.java 
+(compilar todos los archivos juntos, pues estan en un mismo package) 
+
+
+Para correr la aplicacion hay 2 opciones: 
+
+
+java pacman.PacMan localhost n 
+
+
+Para iniciar una partida como host , para n jugadores (hasta 4), localhost solo
+se usa como referencia,internamente se hace un bind a la dirección ip real del 
+equipo 
+
+
+java pacman.PacMan ipServer 
+
+
+Para conectarse como jugador 
+
+
+Esto implica que el jugador que actua como host (opción 1) es el que monta el 
+servidor en primer lugar 
+
+
+La migración del servidor se hace cada 20 segundos (esto se puede cambiar en 
+ServerStub.java linea 345 ) 
+
+
+
