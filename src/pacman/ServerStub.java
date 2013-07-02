@@ -185,7 +185,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	}
 	
 	public void registerQuit(int playerId) throws RemoteException{
-		registerDeath(playerId);
+		//registerDeath(playerId);
 		playersInfo[playerId][3] = -1;
 		playerCount--;
 			

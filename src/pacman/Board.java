@@ -722,6 +722,16 @@ public class Board extends JPanel implements ActionListener{
 					else
 						timer.start();
 				}
+				else if(key == 'q' || key == 'Q'){
+					try{
+						server.registerQuit(playerId);
+					}
+					catch(Exception exp){
+						exp.printStackTrace();
+						System.exit(128);
+					}
+					System.exit(0);
+				}
 			} else{
 				if(!ready && (key=='s'||key=='S')){
 					if(!dead){
@@ -738,6 +748,16 @@ public class Board extends JPanel implements ActionListener{
 						}
 						ready = true;
 					}
+				}
+				else if(key == 'q' || key == 'Q'){
+					try{
+						server.registerQuit(playerId);
+					}
+					catch(Exception exp){
+						exp.printStackTrace();
+						System.exit(128);
+					}
+					System.exit(0);
 				}
 			}
 		}
