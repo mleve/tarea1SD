@@ -96,6 +96,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		levelInit();
 		timer = new Timer(40,this);
 		timer.start();
+		initTime=System.currentTimeMillis();
 	}
 	
 	//Constructor para iniciar un server migrado
@@ -196,8 +197,6 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * de 1 (ready) a 2 (playing).
 	 */
 	public boolean started(int playerId) throws RemoteException{
-		if(isMigrated)
-			return (Boolean) null;
 		if(started){
 			if(playersInfo[playerId][3] == 1){
 				playersInfo[playerId][3] = 2;
@@ -213,7 +212,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		started = true;
 		playersInfo[playerId][3] = 2;
 		//ripPlayersInfo();
-		initTime = System.currentTimeMillis();
+		//initTime = System.currentTimeMillis();
 		return started;
 	}
 	/*
@@ -283,6 +282,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 			ghostspeed[i] = validspeeds[random];
 		}
 	}
+	
 	public void refreshGhosts(){
 		short i;
 		int pos;
@@ -336,11 +336,15 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 
 		}
 	}
-	@Override
+	
+	
 	public void actionPerformed(ActionEvent e) {
 		if(started){
 			refreshGhosts();	
-		//migracion cada 10 seg
+		}
+		//migracion cada 10 seg, solo si hay mas de 1 jugadores
+		//System.out.println(playerCount);
+		if(playerCount>1){
 		if(inWorkingTime && (System.currentTimeMillis()-initTime)>=10*1000){
 			//Se debe realizar migracion, por ahora se pimponean entre jugador 1 y 2
 			int newHost = newRandomHost(hostPlayerId);
@@ -349,8 +353,11 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 			inWorkingTime=false;
 			System.out.println("Se solicito migracion");	
 		}
-		
 		}
+		else{
+			initTime=System.currentTimeMillis();
+		}
+		
 	}
 
 	private int newRandomHost(int actualHostId) {

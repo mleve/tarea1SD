@@ -775,6 +775,9 @@ public class Board extends JPanel implements ActionListener{
 			}
 				
 		} else{
+			
+			
+			
 			/* Si el cliente esta en estado READY, pero no ha comenzado todavia la partida,
 			 * cada 40ms el consulta al servidor si la partida comenzo, es decir,
 			 * si todos los jugadores registraron su estado como READY.
@@ -784,11 +787,22 @@ public class Board extends JPanel implements ActionListener{
 			boolean started = false;
 			try{
 				started = server.started(playerId);
+				playersInfo = server.getInfo();
 			} catch(RemoteException exception){
 				exception.printStackTrace();
 				System.exit(128);
 			}
-			//checkServerMigrated(started);
+			//Revisar si toca hacer de host:
+			checkServerMigrated(playersInfo);
+			if(playersInfo!=null){
+				if(playersInfo[playerId][5]==1){
+					//Le toca hacer de host
+					makeServer();
+					//Este cliente se reconecta al tiro a su nuevo servidor
+					
+				}
+			}
+			
 			if(started && ready){
 				// Comienza el juego
 				ready = false;
