@@ -29,6 +29,9 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+
 public class Board extends JPanel implements ActionListener{
 
 	private ServerInterface newServer;
@@ -776,6 +779,9 @@ public class Board extends JPanel implements ActionListener{
 		if(ingame){
 			try{
 				server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score);
+				int load = (int) (100*ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
+				server.registerLoad(playerId, load);
+				//System.out.println("Load: " + load);
 				//System.out.println("Registered position: ("+pacmanx+","+pacmany+","+pacmandir+")");
 				playersInfo = server.getInfo();
 			} catch(RemoteException exception){
@@ -795,9 +801,6 @@ public class Board extends JPanel implements ActionListener{
 			}
 				
 		} else{
-			
-			
-			
 			/* Si el cliente esta en estado READY, pero no ha comenzado todavia la partida,
 			 * cada 40ms el consulta al servidor si la partida comenzo, es decir,
 			 * si todos los jugadores registraron su estado como READY.
@@ -806,6 +809,9 @@ public class Board extends JPanel implements ActionListener{
 			 */
 			boolean started = false;
 			try{
+				int load = (int) (100*ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
+				server.registerLoad(playerId, load);
+				//System.out.println("Load: " + load);
 				started = server.started(playerId);
 				playersInfo = server.getInfo();
 			} catch(RemoteException exception){

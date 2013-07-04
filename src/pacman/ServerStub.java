@@ -29,6 +29,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * 			3: dead
 	 *		La columna 4 indica el puntaje
 	 *		La columna 5 indica si este jugador debe actuar como server(1 si, 0 no)
+	 *      La columna 6 indica la carga del jugador.
 	 * started indica si la partida comenzo
 	 */
 	//Variables para la magia de la migracion
@@ -79,7 +80,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		this.maxPlayers = maxPlayers;
 		playerCount = 0;
 
-		playersInfo = new int [maxPlayers][6];
+		playersInfo = new int [maxPlayers][7];
 		for(int i = 0; i < playersInfo.length; i++){
 			playersInfo[i][3] = -1;
 			playersInfo[i][5]=0;
@@ -237,6 +238,11 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		playersInfo[playerId][4] = score;
 		//System.out.println("Player "+playerId+" is in ("+x+","+y+")");
 	}
+	
+	public void registerLoad(int playerId, int load) throws RemoteException{
+		playersInfo[playerId][6] = load;
+	}
+	
 
 	/* El jugador consulta este metodo para conocer el estado actual de los demas jugadores.
 	 * Retorna el array de enteros que utiliza el servidor para mantener los datos de los jugadores.
@@ -348,10 +354,12 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		if(inWorkingTime && (System.currentTimeMillis()-initTime)>=10*1000){
 			//Se debe realizar migracion, por ahora se pimponean entre jugador 1 y 2
 			int newHost = newRandomHost(hostPlayerId);
-			playersInfo[hostPlayerId][5]=0;
-			playersInfo[newHost][5]=1;
-			inWorkingTime=false;
-			System.out.println("Se solicito migracion");	
+			if(playersInfo[newHost][6] <= playersInfo[hostPlayerId][6]){
+				playersInfo[hostPlayerId][5]=0;
+				playersInfo[newHost][5]=1;
+				inWorkingTime=false;
+				System.out.println("Se solicito migracion");
+			}
 		}
 		}
 		else{
@@ -373,7 +381,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		}
 		return newHostId;
 	}
-
+	
 	@Override
 	public void sendScreendata(short[] input) throws RemoteException {
 		//System.out.println("servidor recibio screendata");
