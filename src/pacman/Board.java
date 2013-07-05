@@ -46,6 +46,7 @@ public class Board extends JPanel implements ActionListener{
 
 	boolean ready = false;
 	boolean ingame = false;
+	boolean paused = false;
 	boolean dying = false;
 	boolean winner = false;
     boolean dead = false;
@@ -206,6 +207,17 @@ public class Board extends JPanel implements ActionListener{
     		g2d.drawString(s, (scrsize - metr.stringWidth(s)) / 2 + 10, scrsize / 2);
 
     	}
+    	
+    	else if(i == 3) {
+
+    		s = "paused";
+            	g2d.setColor(new Color(0, 32, 48));
+    	        g2d.fillRect(10, scrsize / 2 - 30, scrsize - 1, 50);
+            	g2d.setColor(Color.white);
+            	g2d.drawRect(10, scrsize / 2 - 30, scrsize - 1, 50);
+    		g2d.drawString(s, (scrsize - metr.stringWidth(s)) / 2 + 10, scrsize / 2);
+
+    	}
 
     	else {
             	g2d.setColor(new Color(0, 32, 48));
@@ -336,27 +348,27 @@ public class Board extends JPanel implements ActionListener{
 		 * los clientes piden la nueva ip para reconectarse al nuevo servidor
 		 */
 		if(reqResult==null){
-		String newIp=null;
-		try{
-			newIp=server.getNewServerIp();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		connect(newIp);
-		System.out.println("me conecte al nuevo server con exito :D");
-		/*Una solucion, pedir aqui la actualizacion de datos
-		 * al salir de este metodo, si reqResult era null, el programa se caera
-		 * */
-		try{
-			ghostx = server.getGhostsX();
-			ghosty = server.getGhostsY();
-			screendata = server.requestScreendata();
-			playersInfo = server.getInfo();
-		}catch(Exception e){
-			e.printStackTrace();
-			System.out.println("la peticion de datos al nuevo servidor fallo");
-		}
+			String newIp=null;
+			try{
+				newIp=server.getNewServerIp();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			connect(newIp);
+			System.out.println("me conecte al nuevo server con exito :D");
+			/*Una solucion, pedir aqui la actualizacion de datos
+			 * al salir de este metodo, si reqResult era null, el programa se caera
+			 * */
+			try{
+				ghostx = server.getGhostsX();
+				ghosty = server.getGhostsY();
+				screendata = server.requestScreendata();
+				playersInfo = server.getInfo();
+			}catch(Exception e){
+				e.printStackTrace();
+				System.out.println("la peticion de datos al nuevo servidor fallo");
+			}
 		
 		}
 		
@@ -676,14 +688,18 @@ public class Board extends JPanel implements ActionListener{
 		DrawMaze(g2d);
 		DrawScore(g2d);
 		DoAnim();
-		if(ingame)
+		if(ingame && !paused){
 			PlayGame(g2d);
+		}
 		else{
 			if(winner){
 				ShowIntroScreen(g2d, 1);
 			}
 			else if(dead){
 				ShowIntroScreen(g2d, 2);
+			}
+			else if(paused){
+				ShowIntroScreen(g2d, 3);
 			}
 			else{
 				ShowIntroScreen(g2d, 0);
@@ -724,6 +740,12 @@ public class Board extends JPanel implements ActionListener{
 						timer.stop();
 					else
 						timer.start();
+				} else if(key==KeyEvent.VK_SPACE){
+					if(timer.isRunning()){
+						try{
+							server.togglePause();
+						} catch(Exception exception){}
+					}
 				}
 				else if(key == 'q' || key == 'Q'){
 					try{
@@ -796,8 +818,8 @@ public class Board extends JPanel implements ActionListener{
 					//Este cliente se reconecta al tiro a su nuevo servidor
 					
 				}
-					
 				
+				paused = playersInfo[playerId][7] == 1;
 			}
 				
 		} else{

@@ -19,5 +19,5 @@ public interface ServerInterface extends Remote{
 	public ServerBean getStatus() throws RemoteException;
 	public void informNewServerIp(String newIp) throws RemoteException;
 	public String getNewServerIp() throws RemoteException;
-
+	public void togglePause() throws RemoteException;
 }

@@ -30,6 +30,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 *		La columna 4 indica el puntaje
 	 *		La columna 5 indica si este jugador debe actuar como server(1 si, 0 no)
 	 *      La columna 6 indica la carga del jugador.
+	 *      La columna 7 indica si el juego esta en pausa
 	 * started indica si la partida comenzo
 	 */
 	//Variables para la magia de la migracion
@@ -44,6 +45,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	int maxPlayers, playerCount;
 	int[][] playersInfo;
 	boolean started;
+	boolean paused;
 	short[] screendata;
 	int[] ghostx, ghosty, ghostdx, ghostdy, ghostspeed;
 	int[] dx, dy;
@@ -80,12 +82,13 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		this.maxPlayers = maxPlayers;
 		playerCount = 0;
 
-		playersInfo = new int [maxPlayers][7];
+		playersInfo = new int [maxPlayers][8];
 		for(int i = 0; i < playersInfo.length; i++){
 			playersInfo[i][3] = -1;
 			playersInfo[i][5]=0;
 		}
 		started = false;
+		paused = false;
 		screendata = new short[nrofblocks*nrofblocks];
 		ghostx = new int[maxghosts];
 		ghostdx = new int[maxghosts];
@@ -112,6 +115,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		}
 		playersInfo[hostPlayerId][5]=0;
 		started = status.isStarted();
+		paused = status.isPaused();
 		screendata = status.getScreendata();
 		ghostx = status.getGhostx();
 		ghosty = status.getGhosty();
@@ -137,6 +141,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 					playersInfo[i][2] = 0;
 					playersInfo[i][3] = 0;
 					playersInfo[i][4] = 0;
+					playersInfo[i][7] = paused ? 1 : 0;
 					System.out.println("Player "+i+" REGISTERED");
 					playerCount++;
 					return i;
@@ -345,7 +350,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	
 	
 	public void actionPerformed(ActionEvent e) {
-		if(started){
+		if(started && !paused){
 			refreshGhosts();	
 		}
 		//migracion cada 10 seg, solo si hay mas de 1 jugadores
@@ -431,5 +436,11 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	public String getNewServerIp() throws RemoteException {
 		//Cuando el cliente recibe un null a una peticion, pide la ip de un nuevo servidor para reconectarse
 		return newServerIp;
+	}
+	public void togglePause() throws RemoteException{
+		paused = !paused;
+		for(int i = 0; i < playersInfo.length; i++){
+			playersInfo[i][7] = paused ? 1 : 0;
+		}
 	}
 }
