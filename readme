@@ -5,27 +5,33 @@ instancia un nuevo servidor, y luego se hace un rebind al servicio RMI)
 
 
 Para compilar la aplicacion: 
-estando en la carpeta que contiene pacman, compilar:
+estando en el directorio que contiene al directorio "pacman" (el package base):
+
 javac pacman/*.java 
 (compilar todos los archivos juntos, pues estan en un mismo package) 
 
 
-Para correr la aplicacion hay 2 opciones: 
+Para correr la aplicacion primero se debe ejecutar rmiregistry en cada maquina:
 
+Para ejecutar el juego, hay dos opciones:
 
-java pacman.PacMan localhost n 
+1- Como servidor
+java pacman.PacMan localhost <n>
 
-
-Para iniciar una partida como host , para n jugadores (hasta 4), localhost solo
+Donde n es la cantidad de jugadores (hasta 4), localhost solo
 se usa como referencia,internamente se hace un bind a la dirección ip real del 
-equipo 
+equipo. 
+
+En caso de que el servidor tenga que hacer bind en una dirección que no
+sea localhost, se debe ejecutar incluyendo la opción -Djava.rmi.server.hostname=.
+Por ejemplo :
+
+java -Djava.rmi.server.hostname=192.168.0.1 pacman.PacMan localhost <n>
 
 
-java pacman.PacMan ipServer 
+2- Como jugador cliente:
 
-
-Para conectarse como jugador 
-
+java pacman.PacMan <ipServer> 
 
 Esto implica que el jugador que actua como host (opción 1) es el que monta el 
 servidor en primer lugar 
