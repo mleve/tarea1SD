@@ -263,7 +263,8 @@ public class Board extends JPanel implements ActionListener{
 				server.registerDeath(playerId);
 			} catch(Exception e){}
 		}
-		LevelContinue();
+		//LevelContinue();
+		LevelContinueAfterDeath();
 	}
 
 	public void moveGhosts(Graphics2D g2d){
@@ -615,8 +616,11 @@ public class Board extends JPanel implements ActionListener{
 	}
 
 	public void GameInit(){
-		pacsleft = 3;
-		score = 0;
+		//pacsleft = 3;
+		if(playersInfo == null){pacsleft = 3;
+		} else {pacsleft = playersInfo[playerId][7];}
+		if(playersInfo == null){score = 0;
+		} else {score = playersInfo[playerId][4];}
 		LevelInit();
 		nrofghosts = 6;
 		currentspeed = 3;
@@ -647,8 +651,49 @@ public class Board extends JPanel implements ActionListener{
 			ghostspeed[i] = validspeeds[random];
 		}
 
+		//pacmanx = 7*blocksize;
+		//pacmany = 11*blocksize;
+		if(playersInfo == null){pacmanx = 7*blocksize;
+		} else {pacmanx = playersInfo[playerId][0];}
+		if(playersInfo == null){pacmany = 11*blocksize;
+		} else {pacmany = playersInfo[playerId][1];}
+		if(playersInfo == null){pacmandx = 0;
+		} else {pacmandx = playersInfo[playerId][8];}
+		if(playersInfo == null){pacmandy = 0;
+		} else {pacmandy = playersInfo[playerId][9];}
+		if(playersInfo == null){reqdx = 0;
+		} else {reqdx = playersInfo[playerId][10];}
+		if(playersInfo == null){reqdy = 0;
+		} else {reqdy = playersInfo[playerId][11];}
+		//pacmandx = 0;
+		//pacmandy = 0;
+		//reqdx = 0;
+		//reqdy = 0;
+		viewdx = -1;
+		viewdy = 0;
+		dying = false;
+	}
+
+	public void LevelContinueAfterDeath(){
+		short i;
+		int dx = 1;
+		int random;
+
+		for(i = 0; i<nrofghosts; i++){
+			ghosty[i] = 4*blocksize;
+			ghostx[i] = 4*blocksize;
+			ghostdy[i] = 0;
+			ghostdx[i] = dx;
+			dx = -dx;
+			random = (int)(Math.random()*(currentspeed+1));
+			if(random>currentspeed)
+				random = currentspeed;
+			ghostspeed[i] = validspeeds[random];
+		}
+
 		pacmanx = 7*blocksize;
 		pacmany = 11*blocksize;
+		
 		pacmandx = 0;
 		pacmandy = 0;
 		reqdx = 0;
@@ -800,10 +845,11 @@ public class Board extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent e){
 		if(ingame){
 			try{
-				server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score);
+				server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score, pacsleft, pacmandx, pacmandy, reqdx, reqdy);
+				//server.registerPosition(playerId, pacmanx, pacmany, pacmandir, score);
 				int load = (int) (100*ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
 				server.registerLoad(playerId, load);
-				//System.out.println("Load: " + load);
+				// System.out.println("Load: " + load);
 				//System.out.println("Registered position: ("+pacmanx+","+pacmany+","+pacmandir+")");
 				playersInfo = server.getInfo();
 			} catch(RemoteException exception){
@@ -819,7 +865,7 @@ public class Board extends JPanel implements ActionListener{
 					
 				}
 				
-				paused = playersInfo[playerId][7] == 1;
+				paused = playersInfo[playerId][12] == 1;
 			}
 				
 		} else{

@@ -9,7 +9,7 @@ public interface ServerInterface extends Remote{
 	public void registerDeath(int playerId) throws RemoteException;
 	public void registerQuit(int playerId) throws RemoteException;
 	public boolean started(int playerId) throws RemoteException;
-	public void registerPosition(int playerId, int x, int y, int dir, int score) throws RemoteException;
+	public void registerPosition(int playerId, int x, int y, int dir, int score, int pacsleft, int dx, int dy, int reqdx, int reqdy) throws RemoteException;
 	public void registerLoad(int playerId, int load) throws RemoteException;
 	public int[][] getInfo() throws RemoteException;
 	public int[] getGhostsX() throws RemoteException;
