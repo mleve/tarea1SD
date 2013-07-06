@@ -87,6 +87,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		
 		for(int i = 0; i < playersInfo.length; i++){
 			playersInfo[i][3] = -1;
+			playersInfo[i][4] =  0;
 			playersInfo[i][5] =  0;
 			playersInfo[i][7] =  3;
 			playersInfo[i][0] =  7*24;
@@ -148,7 +149,6 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 				if(playersInfo[i][3] == -1){
 					playersInfo[i][2] = 0;
 					playersInfo[i][3] = 0;
-					playersInfo[i][4] = 0;
 					playersInfo[i][12] = paused ? 1 : 0;
 					if(playersInfo == null) playersInfo[i][4] = 0;
 					System.out.println("Player "+i+" REGISTERED");
