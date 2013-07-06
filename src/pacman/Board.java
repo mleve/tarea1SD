@@ -914,13 +914,16 @@ public class Board extends JPanel implements ActionListener{
 		try{
 			server = (ServerInterface)Naming.lookup("rmi://"+serverIp+":1099/ServerStub");
 		} catch (NotBoundException e){
-			System.out.println("El servicio no esta publicado en el servidor");
+			System.out.println("El servicio no esta publicado en el servidor\n"+e.getMessage());
+			e.printStackTrace();
 			System.exit(128);
 		} catch (MalformedURLException e){
-			System.out.println("URL invalida");
+			System.out.println("URL invalida\n"+e.getMessage());
+			e.printStackTrace();
 			System.exit(128);
 		} catch (RemoteException e){
-			System.out.println("Excepcion remota tratando de conectarse al servidor");
+			System.out.println("Excepcion remota tratando de conectarse al servidor\n"+e.getMessage());
+			e.printStackTrace();
 			System.exit(128);
 		}
 	}

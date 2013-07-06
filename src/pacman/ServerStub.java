@@ -449,7 +449,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		 * */
 		isMigrated = true;
 		newServerIp = newIp;
-		System.out.println("recibida la IP del nuevo servidor");
+		System.out.println("recibida la IP del nuevo servidor: "+newServerIp);
 	}
 
 	@Override
