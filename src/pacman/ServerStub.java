@@ -29,6 +29,8 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * 			3: dead
 	 *		La columna 4 indica el puntaje
 	 *		La columna 5 indica si este jugador debe actuar como server(1 si, 0 no)
+	 *      La columna 6 indica la carga del jugador.
+	 *      La columna 7 indica las vidas restantes del jugador.
 	 * started indica si la partida comenzo
 	 */
 	//Variables para la magia de la migracion
@@ -79,10 +81,17 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		this.maxPlayers = maxPlayers;
 		playerCount = 0;
 
-		playersInfo = new int [maxPlayers][6];
+		playersInfo = new int [maxPlayers][12];
 		for(int i = 0; i < playersInfo.length; i++){
 			playersInfo[i][3] = -1;
-			playersInfo[i][5]=0;
+			playersInfo[i][5] =  0;
+			playersInfo[i][7] =  3;
+			playersInfo[i][0] =  7*24;
+			playersInfo[i][1] =  11*24;
+			playersInfo[i][8] =  0;
+			playersInfo[i][9] =  0;
+			playersInfo[i][10] =  0;
+			playersInfo[i][11] =  0;
 		}
 		started = false;
 		screendata = new short[nrofblocks*nrofblocks];
@@ -131,11 +140,9 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		if(playerCount < maxPlayers){
 			for(int i = 0; i < playersInfo.length; i++){
 				if(playersInfo[i][3] == -1){
-					playersInfo[i][0] = 0;
-					playersInfo[i][1] = 0;
 					playersInfo[i][2] = 0;
 					playersInfo[i][3] = 0;
-					playersInfo[i][4] = 0;
+					if(playersInfo == null) playersInfo[i][4] = 0;
 					System.out.println("Player "+i+" REGISTERED");
 					playerCount++;
 					return i;
@@ -156,6 +163,10 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 */
 	public void registerDeath(int playerId) throws RemoteException{
 		playersInfo[playerId][3] = 3;
+		playersInfo[playerId][4] = 0;
+		playersInfo[playerId][7] = 3;
+		playersInfo[playerId][0] = 7*24;
+		playersInfo[playerId][1] = 11*24;
 		System.out.println("Player "+playerId+" is DEAD");
 		for(int i = 0; i < playersInfo.length; i++){
 			if(playersInfo[i][3] == 2){
@@ -230,13 +241,24 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	 * El servidor no conoce el tablero, ni valida sus parametros, confia en que 
 	 * el jugador le pasa los datos correctos.
 	 */
-	public void registerPosition(int playerId, int x, int y, int dir, int score) throws RemoteException{
+	//public void registerPosition(int playerId, int x, int y, int dir, int score) throws RemoteException{
+	public void registerPosition(int playerId, int x, int y, int dir, int score, int pacsleft, int dx, int dy, int reqdx, int reqdy) throws RemoteException{
 		playersInfo[playerId][0] = x;
 		playersInfo[playerId][1] = y;
 		playersInfo[playerId][2] = dir;
 		playersInfo[playerId][4] = score;
+		playersInfo[playerId][7] = pacsleft;
+		playersInfo[playerId][8] = dx;
+		playersInfo[playerId][9] = dy;
+		playersInfo[playerId][10] = reqdx;
+		playersInfo[playerId][11] = reqdy;
 		//System.out.println("Player "+playerId+" is in ("+x+","+y+")");
 	}
+	
+	public void registerLoad(int playerId, int load) throws RemoteException{
+		playersInfo[playerId][6] = load;
+	}
+	
 
 	/* El jugador consulta este metodo para conocer el estado actual de los demas jugadores.
 	 * Retorna el array de enteros que utiliza el servidor para mantener los datos de los jugadores.
@@ -284,6 +306,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 	}
 	
 	public void refreshGhosts(){
+		//if(playersInfo != null) System.out.println(1 + " score : " + playersInfo[1][4]);
 		short i;
 		int pos;
 		int count;
@@ -348,10 +371,12 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		if(inWorkingTime && (System.currentTimeMillis()-initTime)>=10*1000){
 			//Se debe realizar migracion, por ahora se pimponean entre jugador 1 y 2
 			int newHost = newRandomHost(hostPlayerId);
-			playersInfo[hostPlayerId][5]=0;
-			playersInfo[newHost][5]=1;
-			inWorkingTime=false;
-			System.out.println("Se solicito migracion");	
+			if(playersInfo[newHost][6] <= playersInfo[hostPlayerId][6]){
+				playersInfo[hostPlayerId][5]=0;
+				playersInfo[newHost][5]=1;
+				inWorkingTime=false;
+				System.out.println("Se solicito migracion");
+			}
 		}
 		}
 		else{
@@ -373,7 +398,7 @@ public class ServerStub extends UnicastRemoteObject implements ServerInterface, 
 		}
 		return newHostId;
 	}
-
+	
 	@Override
 	public void sendScreendata(short[] input) throws RemoteException {
 		//System.out.println("servidor recibio screendata");
